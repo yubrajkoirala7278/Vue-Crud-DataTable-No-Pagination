@@ -1,12 +1,13 @@
 import {defineStore} from 'pinia';
 import {ref} from "vue";
-import {fetchProductsApi,deleteProductApi,addProductApi} from './service';
+import {fetchProductsApi,deleteProductApi,addProductApi,fetchSingleProductsApi} from './service';
 
 export const useProducts=defineStore('products',()=>{
     // ===========reactive state====================
     const products=ref([]);
     const isLoading=ref(false);
     const error=ref(null);
+    const singleProduct=ref({});
     // ============================================
 
     // ============FETCH(GET) Product with filter==========
@@ -46,6 +47,20 @@ export const useProducts=defineStore('products',()=>{
     }
     // ==================================================
 
+    // ============FETCH(GET) Single Product with id==========
+    const fetchSingleProduct=async(id)=>{
+        try{
+            isLoading.value=true;
+           const apiData=await fetchSingleProductsApi(id);
+            singleProduct.value=apiData.data;
+        }catch(err){
+            error.value=err;
+        }finally{
+            isLoading.value=false;
+        }
+    }
+    // ====================================================
+
     // ==========return all the method and values=========
     return{
         isLoading,
@@ -53,7 +68,9 @@ export const useProducts=defineStore('products',()=>{
         fetchProducts,
         products,
         deleteProduct,
-        addProduct
+        addProduct,
+        fetchSingleProduct,
+        singleProduct
     }
     // ===================================================
 });

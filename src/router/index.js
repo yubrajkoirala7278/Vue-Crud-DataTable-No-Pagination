@@ -26,11 +26,11 @@ const routes = [
         name: 'admin-products',
         component: () => import('@/modules/admin_products/products.vue'),
       },
-      // {
-      //   path: "/admin/:id/product",
-      //   name: "view-product",
-      //   component: () =>import("@/modules/projects/components/project-properties.vue"),
-      // },
+      {
+        path: "/admin/:id/product-details",
+        name: "product-details",
+        component: () =>import("@/modules/admin_products/components/product-detail.vue"),
+      },
     ],
   },
 ]

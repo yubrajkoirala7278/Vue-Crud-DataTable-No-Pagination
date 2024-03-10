@@ -60,11 +60,6 @@ const productCategory = [
   "women's clothing",
 ];
 // =======================================
-
-// ===========View Single Product==========
-function viewProduct(id) {
-  console.log(id);
-}
 </script>
 <template>
   <!-- ==========Add Product=================== -->
@@ -196,13 +191,14 @@ function viewProduct(id) {
           color="red"
           @click="deleteProducts(item.id)"
         ></v-btn>
-        <v-btn
-          icon="mdi:mdi-eye"
-          variant="text"
-          density="compact"
-          color="green"
-          @click="viewProduct(item.id)"
-        ></v-btn>
+        <router-link :to="{ name: 'product-details', params: { id: item.id }}">
+          <v-btn
+            icon="mdi:mdi-eye"
+            variant="text"
+            density="compact"
+            color="green"
+          ></v-btn>
+      </router-link>
       </div>
     </template>
   </v-data-table-virtual>

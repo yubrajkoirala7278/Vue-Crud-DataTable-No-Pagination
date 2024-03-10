@@ -49,3 +49,15 @@ export const addProductApi=async(data)=>{
     }
 }
 // ==============================================
+
+// ===============Fetch single Product===========
+export const fetchSingleProductsApi=async(id)=>{
+    try{
+        const response=await api.get(`products/${id}`);
+        return response;
+    }catch(error){
+        displayErrorMessage('Something went wrong');
+        console.log(error);
+    }
+}
+// ==============================================
