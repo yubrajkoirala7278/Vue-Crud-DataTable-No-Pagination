@@ -13,6 +13,11 @@ const routes = [
         name: 'home',
         component: () => import('@/modules/home/home.vue'),
       },
+      {
+        path:'/:pathMatch(.*)*',
+        name:'errorPage',
+        component: () => import('@/modules/error-page/error.vue'),
+      }
     ],
   },
   // ========admin===========
@@ -23,7 +28,7 @@ const routes = [
     children: [
       {
         path: '/admin/products',
-        name: 'admin-products',
+        name: '   ',
         component: () => import('@/modules/admin_products/products.vue'),
       },
       {

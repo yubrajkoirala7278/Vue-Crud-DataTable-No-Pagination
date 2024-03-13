@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, computed, reactive, ref } from "vue";
+import { onMounted, computed, reactive, ref,watch } from "vue";
 import { useProducts } from "./store";
 import { headers, getProductStatusClass } from "./util.js";
 import { storeToRefs } from "pinia";
@@ -8,6 +8,7 @@ import { storeToRefs } from "pinia";
 const productStore = useProducts();
 const filter = reactive({
   sortBy: [],
+  sort: null,
 });
 onMounted(() => {
   productStore.fetchProducts(filter);
@@ -16,13 +17,20 @@ const products = computed(() => productStore.products);
 // ========================================
 
 // ======Delete Product====================
-function deleteProducts(id) {
-  productStore.deleteProduct(id);
+async function deleteProducts(id) {
+  var result = confirm("Want to delete?");
+  if (result) {
+    await productStore.deleteProduct(id);
+    productStore.products = productStore.products.filter((currProduct) => {
+      return currProduct.id != id;
+    });
+  }
 }
 // ========================================
 
 // =======Add Product======================
 const product = reactive({
+  id: null,
   title: null,
   price: null,
   description: null,
@@ -34,22 +42,47 @@ const rules = {
   required: (v) => !!v || "Required",
   price: (v) => (!!v && v > 10) || "Amount must be greater than 10",
 };
-// submit form
+// submit form if validated
 const productForm = ref(null);
 const dialog = ref(false);
+const btnName = ref("");
 const { valid } = storeToRefs(productForm);
 function submit() {
   productForm.value.validate().then(async ({ valid }) => {
     if (valid) {
-      await productStore.addProduct(product);
+      if (btnName.value == "Submit") {
+        await productStore.addProduct(product);
+        // append in frontend
+        products.value.unshift({ sno: 0, ...product });
+      } else {
+        await productStore.updateProduct(product);
+        // update in frontend
+        productStore.products = productStore.products.map((currProduct) => {
+          if (currProduct.id === product.id) {
+            return product; // Replace the object with updatedObject
+          }
+          return currProduct; // Keep the original object if it doesn't match the ID
+        });
+      }
+      // close dialog
       dialog.value = false;
-      // append in frontend
-      products.value.unshift({sno:0,...product});
       // reset form
-      productForm.value?.reset();
+      // productForm.value?.reset();
     }
   });
 }
+// reset form
+const resetForm = () => {
+  Object.assign(product, {
+    id: null,
+    title: null,
+    price: null,
+    description: null,
+    image: null,
+    category: null,
+  });
+};
+
 // ========================================
 
 // ====Select Item for Category============
@@ -60,11 +93,45 @@ const productCategory = [
   "women's clothing",
 ];
 // =======================================
+
+//============Display current row value in form for updation=========
+function updateForm(item) {
+  Object.assign(product, {
+    id: item.id,
+    title: item.title,
+    price: item.price,
+    description: item.description,
+    image: item.image,
+    category: item.category,
+  });
+}
+// ====================================
+
+// ========search===================
+// instant search with select
+// watch(filter,()=>{
+//   productStore.fetchProducts(filter);
+// });
+// search from free text after 2 second
+let timeoutId = null;
+function searchProduct() {
+  clearTimeout(timeoutId);
+  timeoutId = setTimeout(() => productStore.fetchProducts(filter), 2000);
+}
+// ========================================
 </script>
 <template>
   <!-- ==========Add Product=================== -->
   <div class="text-start pa-4">
-    <v-btn @click="dialog = true" color="green" class="text-capitalize">
+    <v-btn
+      @click="
+        resetForm();
+        dialog = true;
+        btnName = 'Submit';
+      "
+      color="green"
+      class="text-capitalize"
+    >
       Add Product
     </v-btn>
 
@@ -145,7 +212,7 @@ const productCategory = [
             ></v-btn>
             <v-btn
               type="submit"
-              text="Submit"
+              :text="btnName"
               color="green"
               variant="flat"
               class="text-capitalize"
@@ -156,6 +223,22 @@ const productCategory = [
     </v-dialog>
   </div>
   <!-- ========================================= -->
+
+  <!-- ========Search Product====================== -->
+  <!-- with select input field -->
+  <!-- <v-select
+    label="Select"
+    :items="[
+      'asce',
+      'desc',
+    ]"
+    v-model="filter.sort"
+    class="w-50" 
+  ></v-select> -->
+  <!-- with free text field -->
+  <v-text-field label="Select" variant="outlined"  v-model="filter.sort"
+    class="w-50"  @keyup="searchProduct"></v-text-field>
+  <!-- ============================================ -->
   <!-- ==========Display data with dataTable======== -->
   <v-data-table-virtual
     v-if="products.length"
@@ -183,6 +266,11 @@ const productCategory = [
           variant="text"
           density="compact"
           color="warning"
+          @click="
+            updateForm(item);
+            dialog = true;
+            btnName = 'Update';
+          "
         ></v-btn>
         <v-btn
           icon="mdi:mdi-trash-can-outline"
@@ -191,14 +279,14 @@ const productCategory = [
           color="red"
           @click="deleteProducts(item.id)"
         ></v-btn>
-        <router-link :to="{ name: 'product-details', params: { id: item.id }}">
+        <router-link :to="{ name: 'product-details', params: { id: item.id } }">
           <v-btn
             icon="mdi:mdi-eye"
             variant="text"
             density="compact"
             color="green"
           ></v-btn>
-      </router-link>
+        </router-link>
       </div>
     </template>
   </v-data-table-virtual>

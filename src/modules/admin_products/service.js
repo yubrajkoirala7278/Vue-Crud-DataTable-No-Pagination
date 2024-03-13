@@ -36,6 +36,7 @@ export const deleteProductApi=async(id)=>{
 // 'Content-Type':'multipart/form-data',
 export const addProductApi=async(data)=>{
     try{
+        console.log(data)
         const response=await api.post('products',data,{
             headers:{
                 'Content-Type':'application/json'
@@ -58,6 +59,22 @@ export const fetchSingleProductsApi=async(id)=>{
     }catch(error){
         displayErrorMessage('Something went wrong');
         console.log(error);
+    }
+}
+// ==============================================
+
+// =======UPDATE(PUT)============================
+export const updateProductApi=async(data)=>{
+    try{
+        const response=await api.post(`products/${data.id}`,data,{
+            headers:{
+                'Content-Type':'application/json',
+            }
+        });
+        displaySuccessMessage('Product deleted successfully');
+        return response;
+    }catch(err){
+        displayErrorMessage('Something went wrong');
     }
 }
 // ==============================================
